@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>El dólar hoy: TRM y calculadora de dólares a pesos · Estado X</title>
+<meta name="description" content="La TRM del día con su fecha de vigencia, cuánto ha cambiado en el día, el mes y el año, la gráfica desde 1991 y una calculadora de dólares a pesos y de pesos a dólares. Datos abiertos de la Superintendencia Financiera.">
+<meta property="og:title" content="El dólar hoy y cuántos pesos te llegan">
+<meta property="og:description" content="La TRM oficial del día, su historia y una calculadora en los dos sentidos.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/estilos.css">
+</head>
+<body>
+<header class="banda">
+  <div class="contenedor banda__in">
+    <p class="kicker">Herramienta abierta · Estado X</p>
+    <h1>El dólar hoy y cuántos <em>pesos te llegan</em></h1>
+    <p class="banda__sub">La TRM oficial del día, cuánto ha subido o bajado y una calculadora de dólares a pesos y de pesos a dólares. Los datos son de la Superintendencia Financiera, publicados en datos.gov.co.</p>
+  </div>
+</header>
+
+<main class="contenedor">
+  <p class="mensaje mensaje--error" id="error" role="alert" hidden></p>
+
+  <section class="bloque dos dos--trm" aria-label="La TRM y la calculadora">
+    <div class="tarjeta hoy" aria-labelledby="t-hoy">
+      <h2 id="t-hoy">La TRM de hoy</h2>
+      <p class="hoy__valor" id="trm-valor" aria-live="polite">—</p>
+      <p class="hoy__vigencia" id="trm-vigencia"></p>
+      <p class="hoy__nota" id="trm-nota" hidden></p>
+      <ul class="cambios" id="cambios" aria-label="Cuánto ha cambiado"></ul>
+      <p class="hoy__manana" id="trm-manana" hidden></p>
+    </div>
+
+    <div class="tarjeta calc" aria-labelledby="t-calc">
+      <h2 id="t-calc">Calculadora</h2>
+      <p class="ayuda">Escribe en cualquiera de los dos campos: el otro se calcula a la TRM de hoy.</p>
+      <div class="calc__campos">
+        <div class="campo">
+          <label for="usd">Dólares</label>
+          <div class="moneda"><span aria-hidden="true">US$</span><input type="text" id="usd" inputmode="decimal" autocomplete="off" value="500"></div>
+        </div>
+        <span class="calc__igual" aria-hidden="true">=</span>
+        <div class="campo">
+          <label for="cop">Pesos colombianos</label>
+          <div class="moneda"><span aria-hidden="true">$</span><input type="text" id="cop" inputmode="decimal" autocomplete="off"></div>
+        </div>
+      </div>
+      <div class="chips" role="group" aria-label="Montos rápidos en dólares">
+        <button type="button" class="chip-boton" data-usd="100">US$ 100</button>
+        <button type="button" class="chip-boton" data-usd="300">US$ 300</button>
+        <button type="button" class="chip-boton" data-usd="500">US$ 500</button>
+        <button type="button" class="chip-boton" data-usd="1000">US$ 1.000</button>
+      </div>
+      <p class="calc__resultado" id="calc-frase" aria-live="polite"></p>
+
+      <details class="otra">
+        <summary>¿Te ofrecen otra tasa? Compárala</summary>
+        <div class="campo">
+          <label for="otra">Pesos por dólar que te ofrecen</label>
+          <div class="moneda"><span aria-hidden="true">$</span><input type="text" id="otra" inputmode="decimal" autocomplete="off" placeholder="3.150"></div>
+          <p class="campo__ayuda" id="otra-frase" aria-live="polite"></p>
+        </div>
+      </details>
+
+      <p class="aviso"><strong>Ojo:</strong> la TRM es la referencia oficial, no la tasa a la que te cambian. El banco, la casa de cambio o la empresa de giros te compran los dólares más baratos y te los venden más caros, y pueden cobrar comisiones. Pregunta siempre cuántos pesos te van a entregar.</p>
+    </div>
+  </section>
+
+  <section class="bloque" aria-labelledby="t-grafica">
+    <div class="tarjeta">
+      <div class="grafica__cab">
+        <h2 id="t-grafica">Cómo ha cambiado</h2>
+        <div class="chips" role="radiogroup" aria-label="Periodo de la gráfica">
+          <label class="chip"><input type="radio" name="rango" value="1m"><span>1 mes</span></label>
+          <label class="chip"><input type="radio" name="rango" value="1a" checked><span>1 año</span></label>
+          <label class="chip"><input type="radio" name="rango" value="5a"><span>5 años</span></label>
+          <label class="chip"><input type="radio" name="rango" value="todo"><span>Todo (desde 1991)</span></label>
+        </div>
+      </div>
+      <p class="ayuda" id="grafica-resumen" aria-live="polite"></p>
+      <div class="grafica" id="grafica">
+        <svg id="svg" role="img" aria-labelledby="grafica-resumen" tabindex="0"></svg>
+        <div class="grafica__punto" id="punto" hidden></div>
+      </div>
+      <p class="nota">Pasa el mouse o el dedo por la gráfica para ver la TRM de cada día. Con el teclado: selecciona la gráfica y usa las flechas.</p>
+    </div>
+  </section>
+
+  <section class="bloque dos">
+    <div class="tarjeta">
+      <h2>Qué es la TRM</h2>
+      <ul class="reglas">
+        <li>Es el <strong>promedio ponderado</strong> de las compras y ventas de dólares por pesos que hacen los bancos y demás intermediarios del mercado cambiario, para pagar el mismo día, entre las 7:30 a. m. y la 1:00 p. m.</li>
+        <li>La <strong>Superintendencia Financiera</strong> la calcula cada día hábil con las operaciones de ese día y <strong>rige desde el día siguiente</strong>.</li>
+        <li>Los <strong>sábados, domingos y festivos</strong> no se calcula: rige la misma que en el día hábil siguiente, que se calculó con las operaciones del último día hábil. Por eso la TRM de un viernes en la tarde ya trae la del fin de semana.</li>
+      </ul>
+    </div>
+    <div class="tarjeta">
+      <h2>Límites</h2>
+      <ul class="reglas">
+        <li>Es una <strong>referencia</strong>: nadie te cambia dólares exactamente a la TRM. La diferencia con lo que te pagan depende de cada banco, casa de cambio o empresa de giros.</li>
+        <li>Los datos se actualizan una vez al día desde datos.gov.co. Si la fuente se cae, la página muestra el último dato que tiene y te avisa.</li>
+        <li>«Hoy» es la fecha de Bogotá, según el reloj de tu computador o tu celular.</li>
+        <li>No es asesoría financiera ni predice el dólar de mañana.</li>
+      </ul>
+    </div>
+  </section>
+</main>
+
+<footer class="pie">
+  <div class="contenedor pie__in">
+    <p>Datos: Superintendencia Financiera de Colombia, «<a href="https://www.datos.gov.co/d/32sa-8pi3" target="_blank" rel="noopener">Tasa de Cambio Representativa del Mercado - TRM</a>», en datos.gov.co (licencia CC BY-SA 4.0). <span id="pie-actualizado"></span></p>
+    <p>Todo pasa en tu navegador: los montos que escribes no se envían a ningún lado.</p>
+    <p>Inspirada en <a href="https://github.com/IDouble/Market-Overview-Indexes-Forex-Metals-Crypto" target="_blank" rel="noopener">Market Overview</a> de Alpay Yildirim (licencia MIT). Código abierto en <a href="https://github.com/Estado-X/trm-colombia" target="_blank" rel="noopener">GitHub</a>.</p>
+    <p class="firma">Hecho por <a href="https://estadox.com" target="_blank" rel="noopener">Estado <em>X</em></a></p>
+  </div>
+</footer>
+<script src="assets/trm.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
