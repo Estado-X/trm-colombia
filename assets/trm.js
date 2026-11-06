@@ -122,16 +122,25 @@
   }
 
   /* ---------- Números ---------- */
-  /* Lee lo que escribe la persona: «1.234,56», «1234,5», «1.000», «100.50», «$ 2.000.000». */
+  /* Lee lo que escribe la persona: «1.234,56», «1234,5», «1.000», «100.50», «1,000», «1,000.50», «$ 2.000.000».
+     Con coma y punto, el último que aparece es el decimal. Con un solo signo, decide por las cifras que lo siguen. */
   function leerNumero(texto) {
-    var t = String(texto == null ? '' : texto).replace(/[^\d.,-]/g, '');
+    var t = String(texto == null ? '' : texto).replace(/[^\d.,]/g, '');
     if (!t || !/\d/.test(t)) return null;
-    if (t.indexOf(',') >= 0) {
-      t = t.replace(/\./g, '').replace(',', '.').replace(/,/g, '');
-    } else {
-      var puntos = t.split('.').length - 1;
-      // Un solo punto seguido de 1 o 2 cifras es decimal (100.5, 100.50); en otro caso, miles.
-      if (!(puntos === 1 && /\.\d{1,2}$/.test(t))) t = t.replace(/\./g, '');
+    var coma = t.lastIndexOf(','), punto = t.lastIndexOf('.');
+    if (coma >= 0 && punto >= 0) {
+      var dec = coma > punto ? ',' : '.', miles = dec === ',' ? /\./g : /,/g;
+      t = t.replace(miles, '');
+      if (t.split(dec).length > 2) return null;
+      t = t.replace(dec, '.');
+    } else if (coma >= 0 || punto >= 0) {
+      var signo = coma >= 0 ? ',' : '.';
+      var trozos = t.split(signo);
+      var esMiles = trozos.length > 2 ||
+        (signo === ',' ? /^\d+$/.test(trozos[0]) && /^\d{3}$/.test(trozos[1]) : !/^\d{1,2}$/.test(trozos[1]));
+      // Coma: miles solo si la siguen exactamente 3 cifras (1,000); si no, decimal (2,5).
+      // Punto: decimal solo si lo siguen 1 o 2 cifras (100.50); si no, miles (1.000), como se escribe en Colombia.
+      t = esMiles ? trozos.join('') : trozos[0] + '.' + trozos[1];
     }
     var n = parseFloat(t);
     return isFinite(n) && n >= 0 ? n : null;

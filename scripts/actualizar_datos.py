@@ -134,25 +134,30 @@ def main():
     try:
         serie, avisos = depurar(leer_fuente())
         anterior = DATOS / "trm.json"
-        if anterior.exists():
-            viejo = json.loads(anterior.read_text(encoding="utf-8"))
-            if serie[-1][0].isoformat() < viejo["serie"][-1][0]:
-                raise ValueError("la fuente trae menos días que los datos guardados")
-        guardar("trm.json", {
-            "fuente": "Superintendencia Financiera de Colombia, «Tasa de Cambio Representativa del Mercado - TRM», datos.gov.co (32sa-8pi3)",
-            "url": "https://www.datos.gov.co/d/32sa-8pi3",
-            "licencia": "CC BY-SA 4.0",
-            "actualizado": ahora,
-            "formato": "serie: [vigente desde, pesos por dólar] o [vigente desde, pesos por dólar, vigente hasta] cuando la TRM cubre varios días (fines de semana y festivos)",
-            "serie": compactar(serie),
-        })
+        nueva = compactar(serie)
+        viejo = json.loads(anterior.read_text(encoding="utf-8")) if anterior.exists() else None
+        if viejo and serie[-1][0].isoformat() < viejo["serie"][-1][0]:
+            raise ValueError("la fuente trae menos días que los datos guardados")
+        if viejo and viejo.get("serie") == nueva:
+            print("  data/trm.json sin cambios")
+        else:
+            guardar("trm.json", {
+              "fuente": "Superintendencia Financiera de Colombia, «Tasa de Cambio Representativa del Mercado - TRM», datos.gov.co (32sa-8pi3)",
+              "url": "https://www.datos.gov.co/d/32sa-8pi3",
+              "licencia": "CC BY-SA 4.0",
+              "actualizado": ahora,
+              "formato": "serie: [vigente desde, pesos por dólar] o [vigente desde, pesos por dólar, vigente hasta] cuando la TRM cubre varios días (fines de semana y festivos)",
+              "serie": nueva,
+            })
     except Exception as e:  # la fuente falló: se conservan los datos anteriores
         errores.append(f"trm: {e}")
         print(f"  ERROR: {e} (se conservan los datos anteriores)", file=sys.stderr)
     for a in avisos[:50]:
         print(f"  aviso: {a}")
     guardar("corrida.json", {"actualizado": ahora, "errores": errores, "avisos": avisos[:50]})
-    if errores:
+    # Si la fuente falla pero quedan los datos anteriores, la corrida no se marca en rojo:
+    # el error queda en data/corrida.json. Solo falla si no hay ningún dato que mostrar.
+    if errores and not (DATOS / "trm.json").exists():
         sys.exit(1)
 
 

@@ -30,14 +30,24 @@ jobs:
       - name: Bajar la TRM de datos.gov.co
         run: python scripts/actualizar_datos.py
       - name: Guardar los datos nuevos
-        if: always()
+        # Se sube solo si cambió la TRM (data/trm.json) o si cambiaron los errores de la corrida.
+        # Si la fuente falla, el script conserva los datos anteriores, anota el error y no deja la corrida en rojo.
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if git diff --cached --quiet; then
-            echo "Sin cambios en los datos."
-          else
+          errores_cambiaron() {
+            python - <<'PY'
+          import json, subprocess, sys
+          nuevo = json.load(open("data/corrida.json", encoding="utf-8")).get("errores")
+          r = subprocess.run(["git", "show", "HEAD:data/corrida.json"], capture_output=True, text=True)
+          viejo = json.loads(r.stdout).get("errores") if r.returncode == 0 and r.stdout else None
+          sys.exit(0 if nuevo != viejo else 1)
+          PY
+          }
+          if ! git diff --quiet -- data/trm.json || errores_cambiaron; then
+            git add data/trm.json data/corrida.json
             git commit -m "Datos del $(date -u +%Y-%m-%d)"
             git push
+          else
+            echo "Sin cambios en la TRM."
           fi
